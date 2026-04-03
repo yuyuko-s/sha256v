@@ -23,7 +23,7 @@ module sha256 (
   logic [31:0] k_value;
 
   k k_block(i, k_value);
-  w w_block(i, msg, w_value);
+  w w_block(clk, msg, w_value);
 
   wire [31:0] S0, S1;
   csigma0 cs0(a, S0);

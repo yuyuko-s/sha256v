@@ -8,10 +8,9 @@ module w (
     sigma0 s0 (iv[1], w_sigma0);
     sigma1 s1 (iv[13], w_sigma1);
     always @(posedge clk) begin
-	iv[15] <= iv[0] + w_sigma0 + iv[9] + w_sigma1;
+	    iv[15] <= iv[0] + w_sigma0 + iv[9] + w_sigma1;
         for (integer i = 0; i < 15; i++) begin
-
-	    iv[i] <= iv[i+1];
+	        iv[i] <= iv[i+1];
         end
     end
 

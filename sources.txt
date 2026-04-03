@@ -1,7 +1,6 @@
+w_tb.v
 csigma0.v
-k.v
 sigma0.v
 w.v
 csigma1.v
 sigma1.v
-w_tb.v

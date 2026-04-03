@@ -5,15 +5,15 @@ module w_tb;
     // -------------------------
     // DUT signals
     // -------------------------
-    reg  [5:0]  idx;
-    reg  [31:0] iv [0:15];
-    wire [31:0] w_value;
+    logic  clk;
+    logic  [31:0] iv [0:15];
+    logic  [31:0] w_value;
 
     // -------------------------
     // Instantiate DUT
     // -------------------------
     w dut (
-        .idx     (idx),
+        .clk     (clk),
         .iv      (iv),
         .w_value (w_value)
     );
@@ -23,24 +23,6 @@ module w_tb;
     // -------------------------
     reg [31:0] expected_w [0:63];
 
-    // -------------------------
-    // Helper functions
-    // -------------------------
-    function [31:0] rotr;
-        input [31:0] x;
-        input [4:0]  n;
-        rotr = (x >> n) | (x << (32 - n));
-    endfunction
-
-    function [31:0] sigma0;
-        input [31:0] x;
-        sigma0 = rotr(x, 7) ^ rotr(x, 18) ^ (x >> 3);
-    endfunction
-
-    function [31:0] sigma1;
-        input [31:0] x;
-        sigma1 = rotr(x, 17) ^ rotr(x, 19) ^ (x >> 10);
-    endfunction
 
     // -------------------------
     // Test logic
@@ -50,8 +32,78 @@ module w_tb;
     integer fail_count;
 
     initial begin
+        forever begin
+            clk = 0; #5;
+            clk = 1; #5;
+        end
+        i = 0;
         pass_count = 0;
         fail_count = 0;
+
+        expected_w[0] = 32'h61626380;
+        expected_w[1] = 32'h0;
+        expected_w[2] = 32'h0;
+        expected_w[3] = 32'h0;
+        expected_w[4] = 32'h0;
+        expected_w[5] = 32'h0;
+        expected_w[6] = 32'h0;
+        expected_w[7] = 32'h0;
+        expected_w[8] = 32'h0;
+        expected_w[9] = 32'h0;
+        expected_w[10] = 32'h0;
+        expected_w[11] = 32'h0;
+        expected_w[12] = 32'h0;
+        expected_w[13] = 32'h0;
+        expected_w[14] = 32'h0;
+        expected_w[15] = 32'h18;
+        expected_w[16] = 32'h61626380;
+        expected_w[17] = 32'hf0000;
+        expected_w[18] = 32'h7da86405;
+        expected_w[19] = 32'h600003c6;
+        expected_w[20] = 32'h3e9d7b78;
+        expected_w[21] = 32'h183fc00;
+        expected_w[22] = 32'h12dcbfdb;
+        expected_w[23] = 32'he2e2c38e;
+        expected_w[24] = 32'hc8215c1a;
+        expected_w[25] = 32'hb73679a2;
+        expected_w[26] = 32'he5bc3909;
+        expected_w[27] = 32'h32663c5b;
+        expected_w[28] = 32'h9d209d67;
+        expected_w[29] = 32'hec8726cb;
+        expected_w[30] = 32'h702138a4;
+        expected_w[31] = 32'hd3b7973b;
+        expected_w[32] = 32'h93f5997f;
+        expected_w[33] = 32'h3b68ba73;
+        expected_w[34] = 32'haff4ffc1;
+        expected_w[35] = 32'hf10a5c62;
+        expected_w[36] = 32'ha8b3996;
+        expected_w[37] = 32'h72af830a;
+        expected_w[38] = 32'h9409e33e;
+        expected_w[39] = 32'h24641522;
+        expected_w[40] = 32'h9f47bf94;
+        expected_w[41] = 32'hf0a64f5a;
+        expected_w[42] = 32'h3e246a79;
+        expected_w[43] = 32'h27333ba3;
+        expected_w[44] = 32'hc4763f2;
+        expected_w[45] = 32'h840abf27;
+        expected_w[46] = 32'h7a290d5d;
+        expected_w[47] = 32'h65c43da;
+        expected_w[48] = 32'hfb3e89cb;
+        expected_w[49] = 32'hcc7617db;
+        expected_w[50] = 32'hb9e66c34;
+        expected_w[51] = 32'ha9993667;
+        expected_w[52] = 32'h84badedd;
+        expected_w[53] = 32'hc21462bc;
+        expected_w[54] = 32'h1487472c;
+        expected_w[55] = 32'hb20f7a99;
+        expected_w[56] = 32'hef57b9cd;
+        expected_w[57] = 32'hebe6b238;
+        expected_w[58] = 32'h9fe3095e;
+        expected_w[59] = 32'h78bc8d4b;
+        expected_w[60] = 32'ha43fcf15;
+        expected_w[61] = 32'h668b2ff8;
+        expected_w[62] = 32'heeaba2cc;
+        expected_w[63] = 32'h12b1edeb;
 
         // SHA-256("abc") padded block
         iv[0]  = 32'h61626380;
@@ -71,34 +123,26 @@ module w_tb;
         iv[14] = 32'h00000000;
         iv[15] = 32'h00000018;
 
-        // Compute all 64 expected w values
-        for (i = 0;  i < 16; i = i + 1)
-            expected_w[i] = iv[i];
-        for (i = 16; i < 64; i = i + 1)
-            expected_w[i] = expected_w[i-16]
-                          + sigma0(expected_w[i-15])
-                          + expected_w[i-7]
-                          + sigma1(expected_w[i-2]);
-
-        #10;
-
-        // Test all 64 indices
         $display("idx | expected | got      | result");
         $display("----|----------|----------|-------");
-        for (i = 0; i < 64; i = i + 1) begin
-            idx = i;
+        always @(posedge clk) begin
             #10;
-            if (w_value === expected_w[i]) begin
-                $display("%3d | %08h | %08h | PASS", i, expected_w[i], w_value);
-                pass_count = pass_count + 1;
-            end else begin
-                $display("%3d | %08h | %08h | FAIL", i, expected_w[i], w_value);
-                fail_count = fail_count + 1;
+            if (!done) begin
+                if (w_value === expected_w[i]) begin
+                    $display("%3d | %08h | %08h | PASS", i, expected_w[i], w_value);
+                    pass_count = pass_count + 1;
+                end else begin
+                    $display("%3d | %08h | %08h | FAIL", i, expected_w[i], w_value);
+                    fail_count = fail_count + 1;
+                end
             end
+            if (i == 63) begin
+                done <= 1;
+            end
+            i <= i + 1;
         end
 
-        $display("\n%0d passed, %0d failed", pass_count, fail_count);
-        $finish;
-    end
 
+        $display("\n%0d passed, %0d failed", pass_count, fail_count);
+    end
 endmodule
