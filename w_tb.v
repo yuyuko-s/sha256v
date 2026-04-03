@@ -2,40 +2,31 @@
 
 module w_tb;
 
-    // -------------------------
-    // DUT signals
-    // -------------------------
     logic  clk;
     logic  [31:0] iv [0:15];
     logic  [31:0] w_value;
 
-    // -------------------------
-    // Instantiate DUT
-    // -------------------------
     w dut (
         .clk     (clk),
         .iv      (iv),
         .w_value (w_value)
     );
 
-    // -------------------------
-    // Expected values
-    // -------------------------
     reg [31:0] expected_w [0:63];
 
 
-    // -------------------------
-    // Test logic
-    // -------------------------
     integer i;
     integer pass_count;
     integer fail_count;
+    logic done = 0;
 
     initial begin
-        forever begin
-            clk = 0; #5;
-            clk = 1; #5;
-        end
+        clk = 0;
+        forever #5 clk = ~clk;
+    end
+
+    initial begin
+
         i = 0;
         pass_count = 0;
         fail_count = 0;
@@ -125,24 +116,26 @@ module w_tb;
 
         $display("idx | expected | got      | result");
         $display("----|----------|----------|-------");
-        always @(posedge clk) begin
-            #10;
-            if (!done) begin
-                if (w_value === expected_w[i]) begin
-                    $display("%3d | %08h | %08h | PASS", i, expected_w[i], w_value);
-                    pass_count = pass_count + 1;
-                end else begin
-                    $display("%3d | %08h | %08h | FAIL", i, expected_w[i], w_value);
-                    fail_count = fail_count + 1;
-                end
+
+        @(posedge done);
+
+        $display("\n%0d passed, %0d failed", pass_count, fail_count);
+        $finish;
+    end
+    always @(posedge clk) begin
+        #1;
+        if (!done) begin
+            if (w_value === expected_w[i]) begin
+                $display("%3d | %08h | %08h | PASS", i, expected_w[i], w_value);
+                pass_count = pass_count + 1;
+            end else begin
+                $display("%3d | %08h | %08h | FAIL", i, expected_w[i], w_value);
+                fail_count = fail_count + 1;
             end
             if (i == 63) begin
                 done <= 1;
             end
             i <= i + 1;
         end
-
-
-        $display("\n%0d passed, %0d failed", pass_count, fail_count);
     end
 endmodule

@@ -1,6 +1,9 @@
+sha256_tb.v
 w_tb.v
 csigma0.v
 sigma0.v
 w.v
+k.v
 csigma1.v
 sigma1.v
+sha256.v
